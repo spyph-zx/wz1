@@ -3,123 +3,140 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>For Her — A Romantic Site</title>
+  <title>Always Arya — Romantic</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <!-- Intro overlay (Enter + Play) -->
+  <!-- Top App Bar -->
+  <header class="topbar">
+    <div class="left">
+      <div class="avatar-icon"></div>
+      <div class="title">Always Arya</div>
+    </div>
+    <div class="right">
+      <button id="enterBtn" class="icon-btn" title="Enter / Play">⟳</button>
+    </div>
+  </header>
+
+  <!-- Fullscreen intro overlay (Enter + Play) -->
   <div id="intro" class="intro">
-    <button id="enterBtn" class="enter-btn" aria-label="Enter and Play">
-      <span class="play-icon">▶︎</span>
-      <span class="enter-text">Enter</span>
+    <button id="startBtn" class="start-btn" aria-label="Enter and Play">
+      <span class="play">▶</span>
+      <span class="text">Enter & Play</span>
     </button>
-    <p class="intro-note">Tap to enter and let the melody begin...</p>
-    <!-- You should add your audio file at assets/romantic.mp3 -->
+    <p class="hint">Tap to enter and start the melody</p>
     <audio id="bgAudio" src="assets/romantic.mp3" preload="auto" loop></audio>
   </div>
 
-  <!-- Petal container (falling blossoms) -->
-  <div id="petalContainer" class="petal-container" aria-hidden="true"></div>
+  <!-- Main content -->
+  <main id="app" class="app hidden">
+    <!-- Background image layer (auto-sync via theme) -->
+    <div class="bg-layer" id="bgLayer"></div>
 
-  <!-- Main app -->
-  <div id="app" class="app hidden">
-    <!-- Top overlay for subtle glow and theme -->
-    <div class="overlay-glow"></div>
+    <!-- Petal container -->
+    <div id="petalContainer" class="petal-container" aria-hidden="true"></div>
 
-    <!-- Left navigation (page dots) -->
-    <nav class="nav">
-      <button class="nav-btn" id="prevBtn" title="Previous">‹</button>
-      <div id="dots" class="dots"></div>
-      <button class="nav-btn" id="nextBtn" title="Next">›</button>
-    </nav>
+    <!-- Center stage -->
+    <section class="stage">
+      <!-- floating thumbnails -->
+      <div class="thumb thumb-1"><img src="" alt="thumb"/></div>
+      <div class="thumb thumb-2"><img src="" alt="thumb"/></div>
+      <div class="thumb thumb-3"><img src="" alt="thumb"/></div>
+      <div class="thumb thumb-4"><img src="" alt="thumb"/></div>
+      <div class="thumb thumb-5"><img src="" alt="thumb"/></div>
 
-    <!-- Content pages -->
-    <main class="pages" id="pages">
-      <!-- Page 1 -->
-      <section class="page" data-theme="romance,roses" data-index="1">
-        <h2 contenteditable="true" class="editable title">To my love</h2>
-        <p contenteditable="true" class="editable desc">Write your sentence here — make it tender.</p>
-        <div class="gif-area">
-          <input class="gif-url" placeholder="Paste GIF URL or choose a gif link..." />
-          <button class="btn add-gif-btn">Add GIF</button>
-          <div class="gif-preview"><img src="" alt="" /></div>
-          <div class="gif-buttons">
-            <button class="btn yes-btn">Yes</button>
-            <button class="btn no-btn">No</button>
-          </div>
-        </div>
-      </section>
+      <!-- Neon heart -->
+      <div class="heart-wrap">
+        <div class="neon-heart"></div>
+        <div class="heart-text" contenteditable="true" id="heartText">Hey Arya<br/>Happy Valentine's Day</div>
+      </div>
+    </section>
 
-      <!-- Page 2 -->
-      <section class="page" data-theme="blossom,romantic,night" data-index="2">
-        <h2 contenteditable="true" class="editable title">Moonlit Whispers</h2>
-        <p contenteditable="true" class="editable desc">Another sentence for a memory.</p>
-        <div class="gif-area">
-          <input class="gif-url" placeholder="Paste GIF URL..." />
-          <button class="btn add-gif-btn">Add GIF</button>
-          <div class="gif-preview"><img src="" alt="" /></div>
-          <div class="gif-buttons">
-            <button class="btn yes-btn">Yes</button>
-            <button class="btn no-btn">No</button>
-            </div>
-        </div>
-      </section>
+    <!-- Floating music control (bottom-right) -->
+    <button id="playToggle" class="music-btn" aria-label="Play/Pause">⏸</button>
 
-      <!-- Page 3 -->
-      <section class="page" data-theme="candlelight,romantic" data-index="3">
-        <h2 contenteditable="true" class="editable title">Sweet Moments</h2>
-        <p contenteditable="true" class="editable desc">Write what you love about her.</p>
-        <div class="gif-area">
-          <input class="gif-url" placeholder="Paste GIF URL..." />
-          <button class="btn add-gif-btn">Add GIF</button>
-          <div class="gif-preview"><img src="" alt="" /></div>
-          <div class="gif-buttons">
-            <button class="btn yes-btn">Yes</button>
-            <button class="btn no-btn">No</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Page 4 (special No behaviour on mobile) -->
-      <section class="page" data-theme="petals,roses" data-index="4">
-        <h2 contenteditable="true" class="editable title">Promise</h2>
-        <p contenteditable="true" class="editable desc">A promise written just for her.</p>
-
-        <!-- Mobile frame to demonstrate floating No button -->
-        <div class="mobile-frame" id="mobileFrame">
-          <div class="gif-area">
-            <input class="gif-url" placeholder="Paste GIF URL..." />
-            <button class="btn add-gif-btn">Add GIF</button>
-            <div class="gif-preview"><img src="" alt="" /></div>
-            <div class="gif-buttons">
-              <button class="btn yes-btn">Yes</button>
-              <button class="btn no-btn" id="noBtn">No</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Page 5 (appears after any Yes) -->
-      <section class="page hidden" id="page5" data-theme="love,celebrate">
-        <h2 class="title">You said yes 💖</h2>
-        <p class="desc">A special moment — saved for us.</p>
-        <div class="gif-area final-gif">
-          <div class="gif-preview"><img src="" alt="Celebration GIF" /></div>
-          <p class="final-text" contenteditable="true">Write the final message here.</p>
-        </div>
-      </section>
-    </main>
-
-    <!-- Footer controls: background keyword (auto-sync) and reset -->
-    <footer class="footer">
-      <label>
-        Background keyword:
-        <input id="bgKeyword" placeholder="e.g. roses, moonlight" />
-      </label>
-      <button id="applyBgBtn" class="btn small">Apply</button>
-      <button id="resetBtn" class="btn small ghost">Reset to default</button>
+    <!-- Bottom overlay: page controls & inputs (collapsed on mobile) -->
+    <footer class="bottom-controls">
+      <div class="controls-left">
+        <button id="prevBtn" class="small">‹</button>
+        <button id="nextBtn" class="small">›</button>
+        <div class="dots" id="dots"></div>
+      </div>
+      <div class="controls-right">
+        <input id="bgKeyword" placeholder="Background keyword (roses, moonlight)" />
+        <button id="applyBgBtn" class="small">Apply</button>
+                <button id="resetBtn" class="small ghost">Reset</button>
+      </div>
     </footer>
-  </div>
+
+    <!-- Hidden pages (4 pages + the 5th appears after Yes) -->
+    <div id="pagesContainer" class="pages hidden">
+      <!-- Each page is editable and has GIF input and Yes/No -->
+      <section class="page" data-index="1" data-theme="roses,romantic">
+        <h3 contenteditable="true" class="page-title">To my love</h3>
+        <p contenteditable="true" class="page-desc">Write something sweet here.</p>
+        <div class="gif-area">
+          <input class="gif-url" placeholder="Paste GIF URL..." />
+          <button class="add-gif-btn">Add GIF</button>
+          <div class="gif-preview"><img src="" alt="gif"/></div>
+          <div class="gif-actions">
+            <button class="yes-btn">Yes</button>
+            <button class="no-btn">No</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" data-index="2" data-theme="moonlight,roses">
+        <h3 contenteditable="true" class="page-title">Moonlit Whispers</h3>
+        <p contenteditable="true" class="page-desc">A short memory.</p>
+        <div class="gif-area">
+          <input class="gif-url" placeholder="Paste GIF URL..." />
+          <button class="add-gif-btn">Add GIF</button>
+          <div class="gif-preview"><img src="" alt="gif"/></div>
+          <div class="gif-actions">
+            <button class="yes-btn">Yes</button>
+            <button class="no-btn">No</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" data-index="3" data-theme="candlelight,romantic">
+        <h3 contenteditable="true" class="page-title">Sweet Moments</h3>
+        <p contenteditable="true" class="page-desc">Add your lines.</p>
+        <div class="gif-area">
+          <input class="gif-url" placeholder="Paste GIF URL..." />
+          <button class="add-gif-btn">Add GIF</button>
+          <div class="gif-preview"><img src="" alt="gif"/></div>
+          <div class="gif-actions">
+            <button class="yes-btn">Yes</button>
+            <button class="no-btn">No</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" data-index="4" data-theme="petals,roses">
+        <h3 contenteditable="true" class="page-title">Promise</h3>
+        <p contenteditable="true" class="page-desc">A promise for her.</p>
+        <div class="gif-area">
+          <input class="gif-url" placeholder="Paste GIF URL..." />
+          <button class="add-gif-btn">Add GIF</button>
+          <div class="gif-preview"><img src="" alt="gif"/></div>
+          <div class="gif-actions">
+            <button class="yes-btn">Yes</button>
+            <button class="no-btn special-no" id="floatingNo">No</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Page 5 appears when Yes clicked -->
+      <section class="page hidden" id="page5" data-index="5" data-theme="celebrate">
+        <h3 class="page-title">You said yes 💖</h3>
+        <p contenteditable="true" class="page-desc">This is our special page.</p>
+        <div class="gif-preview final"><img src="" alt="final gif"/></div>
+        <p contenteditable="true" class="final-text">Write your final message here.</p>
+      </section>
+    </div>
+  </main>
 
   <script src="js/app.js"></script>
 </body>
