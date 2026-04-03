@@ -1,172 +1,171 @@
-/* Dark romantic theme with glow */
+ss
 :root{
-  --bg-image: none;
-  --bg-dark: rgba(4,4,10,0.6);
-  --accent: #ff6b9f;
-  --accent-2: #ff9fc9;
-  --glass: rgba(255,255,255,0.03);
-  --text: #f7f7fb;
-  --muted: #b9b6c5;
+  --aent:#ff2b6d;
+  --accent-2:#ff8fb0;
+  --bg-mauve:#7e5f5f;
+  --text:#f8eef2;
+  --muted:#d7cbd1;
 }
 
-/* Basic resets */
+/* Reset */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
   margin:0;
-  font-family: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
+  font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
+  background:linear-gradient(180deg,#07030a,#09050b 60%);
   color:var(--text);
-  background: radial-gradient(1200px 600px at 10% 10%, rgba(255,80,150,0.06), transparent),
-              linear-gradient(180deg, rgba(6,6,12,0.95), rgba(2,2,6,0.95));
-  background-image: var(--bg-image), linear-gradient(180deg, rgba(6,6,12,0.95), rgba(2,2,6,0.95));
-  background-size: cover;
-  background-position: center;
-  transition: background-image 1s ease, background-color 0.8s;
   -webkit-font-smoothing:antialiased;
-}
-
-/* intro overlay */
-.intro{
-  position:fixed; inset:0;
-  display:flex; align-items:center; justify-content:center;
-  flex-direction:column;
-  background:linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.85));
-  z-index:999;
-  gap:16px;
-}
-.enter-btn{
-  --size:160px;
-  width:var(--size); height:var(--size);
-  border-radius:50%;
-  border:none;
-  background: radial-gradient(circle at 20% 20%, rgba(255,120,170,0.18), rgba(140,20,80,0.18)), linear-gradient(135deg, rgba(255,90,140,0.18), rgba(60,10,40,0.12));
-  color:var(--text);
-  font-size:20px;
-  cursor:pointer;
-  display:flex; align-items:center; justify-content:center; flex-direction:column;
-  box-shadow: 0 6px 30px rgba(255,100,160,0.08), 0 0 40px rgba(255,80,140,0.06);
-  backdrop-filter: blur(4px);
-}
-.enter-btn:hover{transform:translateY(-4px); transition:transform .2s}
-.play-icon{font-size:28px}
-.intro-note{color:var(--muted)}
-
-/* Hidden helper */
-.hidden{display:none}
-
-/* Main app layout */
-.app{
-  padding:28px;
-  min-height:100vh;
-  position:relative;
   overflow:hidden;
 }
 
-/* glow overlay */
-.overlay-glow{
-  position:absolute; inset:0;
-  pointer-events:none;
-  background: radial-gradient(600px 300px at 20% 10%, rgba(255,110,150,0.08), transparent), radial-gradient(800px 400px at 80% 90%, rgba(160,60,140,0.06), transparent);
-  mix-blend-mode:screen;
+/* Topbar */
+.topbar{
+  position:fixed; inset-inline:0; top:0;
+  height:56px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 12px; z-index:60; backdrop-filter: blur(6px);
+  background: linear-gradient(180deg, rgba(126,95,95,0.75), rgba(126,95,95,0.55));
+  color:var(--text);
+}
+.topbar .left{display:flex; align-items:center; gap:10px}
+.avatar-icon{
+  width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+.title{font-weight:600; font-size:16px}
+.icon-btn{background:transparent; border:none; color:var(--text); font-size:18px; cursor:pointer}
+
+/* Intro overlay */
+.intro{
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:12px; z-index:80;
+  background:linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.78));
+}
+.start-btn{
+  width:170px; height:170px; border-radius:50%; border:none; cursor:pointer;
+  background: radial-gradient(circle at 30% 20%, rgba(255,80,150,0.12), transparent),
+              linear-gradient(135deg, rgba(255,80,150,0.16), rgba(140,20,80,0.06));
+  color:var(--text); display:flex; flex-direction:column; align-items:center; justify-content:center;
+  box-shadow: 0 10px 40px rgba(255,80,140,0.08);
+}
+.start-btn .play{font-size:36px}
+.hint{color:var(--muted); margin:0}
+
+/* Hidden */
+.hidden{display:none}
+
+/* Background layer (image url via JS) */
+.bg-layer{
+  position:fixed; inset:0; z-index:0; background-size:cover; background-position:center;
+  filter: saturate(0.85) contrast(0.9) brightness(0.45);
+  transition: background-image 1s ease;
 }
 
-/* Petal container sits on top */
-.petal-container{
-  position:fixed; inset:0; pointer-events:none; z-index:200;
-}
-
-/* petals created by JS get these styles */
+/* petals */
+.petal-container{position:fixed; inset:0; pointer-events:none; z-index:20}
 .petal{
-  position:fixed;
-  width:26px; height:26px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24"><path fill="%23ff7fa0" d="M12 2s3 2 4 4 1 5-1 7-6 5-6 5 0-4-2-6S4 6 5 4s7-2 7-2z"/></svg>');
-  background-size:cover;
-  opacity:0.95;
-  filter: drop-shadow(0 4px 8px rgba(255,100,140,0.12));
-  will-change: transform, top, left, opacity;
-  animation-name: float, spin;
-  animation-duration: 7s, 6s;
-  animation-iteration-count: infinite, infinite;
-  animation-timing-function: linear, linear;
+  position:fixed; width:22px; height:22px; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%23ff85a6" d="M12 2s3 2 4 4 1 5-1 7-6 5-6 5 0-4-2-6S4 6 5 4s7-2 7-2z"/></svg>');
+  background-size:cover; opacity:0.9;
+  filter: drop-shadow(0 6px 20px rgba(255,80,140,0.08));
+  will-change:transform; animation: fall 7s linear infinite;
 }
-@keyframes float {
-  0%{transform: translateY(-10vh) rotate(0deg); opacity:0}
+@keyframes fall{
+  0%{transform: translateY(-20vh) rotate(0) translateX(0); opacity:0}
   10%{opacity:1}
-  100%{transform: translateY(110vh) rotate(720deg); opacity:0.9}
-}
-@keyframes spin { 0%{transform: rotate(0deg)} 100%{transform: rotate(360deg)} }
-
-/* navigation (dots + arrows) */
-.nav{
-  position:absolute; left:18px; top:18px; z-index:30;
-  display:flex; flex-direction:column; align-items:center; gap:12px;
-}
-.nav-btn{
-  border:none; background:transparent; color:var(--text);
-  font-size:28px; cursor:pointer;
-  padding:6px;
-}
-.dots{display:flex; flex-direction:column; gap:8px}
-.dot{
-  width:10px; height:10px; border-radius:50%;
-  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.04);
-  cursor:pointer;
-  transition:transform .2s, background .2s;
-}
-.dot.active{background:linear-gradient(180deg,var(--accent),var(--accent-2)); box-shadow:0 6px 20px rgba(255,100,150,0.12); transform:scale(1.2)}
-
-/* pages layout */
-.pages{
-  display:flex; gap:40px; padding-left:120px; padding-top:40px;
-  transition:transform 0.6s cubic-bezier(.2,.9,.2,1);
-  position:relative;
-}
-.page{
-  min-width:72vw; max-width:900px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:14px; padding:28px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-  border:1px solid rgba(255,255,255,0.03);
+  100%{transform: translateY(120vh) rotate(720deg) translateX(80px); opacity:0.9}
 }
 
-/* editable text */
-.editable{outline:none}
-.title{font-size:28px; margin:0 0 10px 0}
-.desc{color:var(--muted); margin-top:0}
+/* Stage */
+.stage{
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:10;
+  pointer-events:none;
+}
 
-/* GIF area */
-.gif-area{margin-top:18px; display:flex; flex-direction:column; gap:10px}
-.gif-url{padding:10px; background:var(--glass); border:none; color:var(--text); border-radius:8px}
-.add-gif-btn{width:120px; padding:8px; border-radius:8px; border:none; background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:white; cursor:pointer}
-.gif-preview{height:200px; background:rgba(255,255,255,0.02); border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden}
-.gif-preview img{max-width:100%; max-height:100%; object-fit:cover}
+/* thumbnails */
+.thumb{
+  width:86px; height:86px; border-radius:14px; overflow:hidden; border:2px solid rgba(255,255,255,0.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15));
+  position:absolute; pointer-events:auto;
+  transition: transform .4s cubic-bezier(.2,.9,.2,1), box-shadow .25s;
+}
+.thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.thumb:hover{transform: translateY(-6px) scale(1.02); box-shadow: 0 18px 40px rgba(255,80,140,0.08)}
 
-/* yes/no buttons */
-.gif-buttons{display:flex; gap:12px; margin-top:8px}
-.btn{padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:rgba(255,255,255,0.04); color:var(--text)}
-.yes-btn{background:linear-gradient(90deg,var(--accent),#ff8fb0); color:#fff}
-.no-btn{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted)}
+/* thumb positions around center (like your screenshot) */
+.thumb-1{left:8%; top:12%}
+.thumb-2{right:8%; top:12%}
+.thumb-3{left:6%; bottom:18%}
+.thumb-4{right:6%; bottom:18%}
+.thumb-5{left:50%; top:6%; transform:translateX(-50%); width:100px; height:100px; border-radius:18px}
 
-/* mobile frame for special No */
-.mobile-frame{width:300px; height:600px; border-radius:20px; border:1px solid rgba(255,255,255,0.03); padding:14px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.15)); position:relative; overflow:hidden}
+/* Neon heart */
+.heart-wrap{position:relative; width:320px; height:320px; display:flex; align-items:center; justify-content:center; pointer-events:auto;}
+.neon-heart{
+  width:260px; height:260px; position:absolute;
+  background: radial-gradient(circle at 50% 40%, rgba(255,120,160,0.06), transparent 40%);
+  border-radius:50%;
+  box-shadow: 0 0 40px rgba(255,60,120,0.08);
+}
+/* heart outline using pseudo element */
+.heart-wrap::before{
+  content:""; position:absolute; width:240px; height:210px; background:transparent;
+  border:6px solid rgba(255,80,150,0.18); border-radius:50% 50% 50% 50% / 50% 50% 60% 60%;
+  box-shadow: 0 0 60px rgba(255,60,140,0.55), inset 0 0 20px rgba(255,255,255,0.02);
+  transform: rotate(-45deg) translateY(-8px);
+  mix-blend-mode:screen;
+  filter: drop-shadow(0 8px 40px rgba(255,40,120,0.18));
+}
+/* Inner neon stroke to mimic heart shape (another pseudo) */
+.heart-wrap::after{
+  content:""; position:absolute; width:200px; height:200px; border-radius:50%;
+  box-shadow: 0 0 40px rgba(255,120,160,0.9), 0 0 90px rgba(255,80,140,0.35);
+  opacity:0.12;
+  transform: translateY(10px);
+}
 
-/* final page */
-.final-gif img{max-height:360px}
-.final-text{margin-top:14px; color:var(--muted)}
+/* Heart text */
+.heart-text{
+  position:relative; z-index:5; text-align:center; pointer-events:auto;
+  font-family: "Great Vibes", "Segoe UI", serif; font-size:22px; line-height:1.2;
+  color:#fff; text-shadow: 0 6px 30px rgba(255,60,140,0.18);
+  padding: 8px 16px;
+}
+.heart-text:focus{outline:none}
 
-/* footer */
-.footer{position:fixed; right:18px; bottom:18px; display:flex; gap:8px; align-items:center; z-index:30}
-.footer input{padding:8px; border-radius:8px; border:none; background:rgba(255,255,255,0.02); color:var(--text)}
-.small{padding:6px 10px; font-size:13px}
+/* Music floating button */
+.music-btn{
+  position:fixed; right:18px; bottom:18px; z-index:70;
+  width:68px; height:68px; border-radius:50%; border:none; cursor:pointer;
+  background:linear-gradient(180deg,var(--accent),var(--accent-2)); color:white; font-size:24px;
+  box-shadow: 0 10px 40px rgba(255,60,140,0.18);
+}
+
+/* Bottom controls */
+.bottom-controls{
+  position:fixed; left:12px; right:12px; bottom:14px; z-index:70; display:flex; justify-content:space-between;
+  gap:8px; align-items:center; pointer-events:auto;
+}
+.bottom-controls input{padding:8px; border-radius:8px; border:none; min-width:180px; background:rgba(255,255,255,0.03); color:var(--text)}
+.small{padding:8px 12px; border-radius:10px; border:none; background:rgba(255,255,255,0.04); color:var(--text); cursor:pointer}
 .ghost{background:transparent; border:1px dashed rgba(255,255,255,0.04)}
 
-/* responsive */
-@media (max-width:900px){
-  .pages{padding-left:24px; gap:20px}
-  .page{min-width:86vw}
-  .nav{left:8px; top:8px}
-}
-@media (max-width:600px){
-  .page{min-width:92vw; padding:18px}
-  .mobile-frame{width:220px; height:420px}
-  /* make the no button behave / float more playfully */
-  .no-btn{position:relative}
+/* Pages (hidden UI for adding content) */
+.pages{position:fixed; inset:80px 18px 110px 18px; z-index:65; overflow:auto; background:transparent; pointer-events:auto}
+.page{background:rgba(0,0,0,0.5); border-radius:12px; padding:12px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.03)}
+.page-title{margin:0; font-size:16px}
+.page-desc{margin:6px 0 8px 0; color:var(--muted)}
+.gif-area{display:flex; gap:8px; align-items:center}
+.gif-url{flex:1; padding:8px; border-radius:8px; background:rgba(255,255,255,0.02); border:none; color:var(--text)}
+.gif-preview{width:120px; height:80px; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.02)}
+.gif-preview img{max-width:100%; max-height:100%; object-fit:cover}
+.gif-actions{display:flex; gap:8px}
+
+/* Responsive */
+@media (max-width:420px){
+  .heart-wrap{width:260px; height:260px}
+  .thumb{width:72px; height:72px}
+  .music-btn{width:60px; height:60px}
+  .topbar{height:52px}
 }
