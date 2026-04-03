@@ -1,288 +1,235 @@
-/* App JS for romantic site.
-   - Handles intro enter + audio
-   - Generates falling petals
-   - Page navigation and background auto-sync using Unsplash Source
-   - Editable content saved to localStorage
-   - GIF add, Yes/No logic
-   - Special floating No button on page 4 in mobile
-*/
+
+// Romantic site JS (visual + interactions)
+// - Enter + play audio
+// - Falling petals
+// - Floating thumbs
+// - Heart text editable
+// - Pages with GIF add / yes-no logic (4 pages + reveal page5 on Yes)
+// - Background auto-sync from Unsplash
 
 (() => {
-  // DOM refs
   const intro = document.getElementById('intro');
+  const startBtn = document.getElementById('startBtn');
   const enterBtn = document.getElementById('enterBtn');
   const bgAudio = document.getElementById('bgAudio');
   const app = document.getElementById('app');
   const petalContainer = document.getElementById('petalContainer');
-  const pagesEl = document.getElementById('pages');
+  const bgLayer = document.getElementById('bgLayer');
+  const playToggle = document.getElementById('playToggle');
+  const heartText = document.getElementById('heartText');
+
+  const pagesContainer = document.getElementById('pagesContainer');
   const pageEls = Array.from(document.querySelectorAll('.page'));
-  const dotsEl = document.getElementById('dots');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
+  const page5 = document.getElementById('page5');
+
+  const thumbEls = Array.from(document.querySelectorAll('.thumb'));
   const bgKeyword = document.getElementById('bgKeyword');
   const applyBgBtn = document.getElementById('applyBgBtn');
   const resetBtn = document.getElementById('resetBtn');
-  const page5 = document.getElementById('page5');
-  const mobileFrame = document.getElementById('mobileFrame');
-  const noBtnSpecial = document.getElementById('noBtn');
 
-  // state
-  let currentIndex = 0;
-  const pageDataKey = "romantic_pages_v1";
+  // thumbnails default placeholders (you can update these later)
+  const defaultThumbs = [
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&s=6f8b3d58a6e0e03b7b70cb7b45f6d3f9',
+    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&s=918b6d7f0b5e9b1dcf1d64f0f246a7b3',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&s=965e3b3f8b1f7c7a8f3c9eea6f0e8f45',
+    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&s=cd5b4b3a5da95c5c54d46b5291f7a54a',
+    'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&s=bae342c20c2fdd0f5f2d6fb5a9d8a3b8'
+  ];
 
-  // create dots
-  pageEls.forEach((p, idx) => {
-    const dot = document.createElement('div');
-    dot.className = 'dot' + (idx === 0 ? ' active' : '');
-    dot.dataset.index = idx;
-    dot.addEventListener('click', () => goToIndex(idx));
-    dotsEl.appendChild(dot);
+  // assign thumbs
+  thumbEls.forEach((el, i) => {
+    const img = el.querySelector('img');
+    img.src = defaultThumbs[i] || defaultThumbs[0];
   });
 
-  // page navigation
-  function goToIndex(idx) {
-    currentIndex = idx;
-    const translateX = -idx * (pageEls[0].offsetWidth + parseInt(getComputedStyle(pagesEl).gap || 40));
-    pagesEl.style.transform = translateX(${translateX}px);
-    Array.from(dotsEl.children).forEach(d => d.classList.toggle('active', +d.dataset.index === idx));
-    // auto-sync background with page theme
-    const theme = pageEls[idx].dataset.theme || '';
-    setBackgroundForTheme(theme);
-    // save
-    saveState();
-  }
-
-  prevBtn.addEventListener('click', () => {
-    if (currentIndex > 0) goToIndex(- 1);
-  });
-  nextBtn.addEventListener('click', () => {
-    if (currentIndex < pageEls.length - 1) goToIndex(currentIndex + 1);
-  });
-
-  // Enter + play music
-  enterBtn.addEventListener('click', async () => {
-    try {
-      await bgAudio.play();
-    } catch (e) {
-      // some browsers require gesture; this click is allowed
-    }
+  // Show app on start
+  async function enterSite() {
+    try { await bgAudio.play(); } catch (e) { /* gesture required handled by click */ }
     intro.classList.add('hidden');
     app.classList.remove('hidden');
     startPetals();
-    goToIndex(0);
-    loadState();
+    startFloatingThumbs();
+  }
+  startBtn.addEventListener('click', enterSite);
+  enterBtn.addEventListener('click', () => {
+    // simple reset or reapply background
+    const kw = bgKeyword.value.trim();
+    if (kw) setBackground(kw);
   });
 
-  // Petal generation
-  function startPetals() {
-    // create multiple petals with randomized timing
-    const count = 18;
-    for (let i = 0; i < count; i++) {
-      createPetal(i);
-    }
-    // keep generating slowly
-    setInterval(() => { createPetal(); }, 3000);
+  // Play/pause toggle button
+  function updatePlayBtn() {
+    playToggle.textContent = bgAudio.paused ? "▶" : "⏸";
   }
-  function createPetal(seed) {
+  playToggle.addEventListener('click', async () => {
+    if (bgAudio.paused) {
+      try { await bgAudio.play(); } catch (e) {}
+    } else {
+      bgAudio.pause();
+    }
+    updatePlayBtn();
+  });
+  bgAudio.addEventListener('play', updatePlayBtn);
+  bgAudio.addEventListener('pause', updatePlayBtn);
+
+  // Petals
+  function startPetals() {
+    const count = 14;
+    for (let i = 0; i < count; i++) createPetal(i);
+    setInterval(() => createPetal(), 3000);
+  }
+  function createPetal(seed = 0) {
     const p = document.createElement('div');
     p.className = 'petal';
-    // random starting horizontal position across viewport
     const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-    const left = Math.random() * vw;
-    p.style.left = ${left}px;
-    p.style.top = ${-30 - Math.random() * 40}px;
-    // randomized animation duration and delay
-    const dur = 6 + Math.random() * 5;
-    const delay = Math.random() * 4;
-    p.style.animationDuration = ${dur}s, ${4 + Math.random() * 8}s;
-    p.style.animationDelay = ${delay}s, ${delay}s;
-    p.style.opacity = ${0.7 + Math.random() * 0.4};
+    p.style.left = `${Math.random() * vw}px`;
+    const dur = 6 + Math.random() * 6;
+    p.style.animationDuration = `${dur}s`;
     petalContainer.appendChild(p);
-    // remove after animation roughly ends (~dur + delay)
-    setTimeout(() => { p.remove(); }, (dur + delay) * 1000 + 2000);
+    setTimeout(() => p.remove(), (dur + 1) * 1000);
   }
 
-  // background auto-sync using Unsplash source
-  let bgFetchInProgress = null;
-  function setBackgroundForTheme(themeStr) {
-    const q = (bgKeyword.value && bgKeyword.value.trim()) || (themeStr || '').trim() || "romantic,roses";
-    // Use Unsplash source for keyword-based image (no API key)
-    // Note: this returns a redirect URL for an image - set as CSS url()
-    const url = https://source.unsplash.com/1600x900/?${encodeURIComponent(q)};
-    document.documentElement.style.setProperty('--bg-image', url("${url}"));
+  // Floating thumbs subtle animation
+  function startFloatingThumbs() {
+    thumbEls.forEach((t, idx) => {
+      floatThumb(t, idx);
+      setInterval(() => floatThumb(t, idx), 3500 + idx * 300);
+    });
+  }
+  function floatThumb(el, i) {
+    const amp = 6 + (i % 3) * 4;
+    el.animate([
+      { transform: `translateY(0)` },
+      { transform: `translateY(-${amp}px)` },
+      { transform: `translateY(0)` }
+    ], { duration: 3000 + Math.random() * 2000, iterations: 1, easing: 'ease-in-out' });
   }
 
+  // Background via Unsplash Source
+  function setBackground(query) {
+    const url = `https://source.unsplash.com/1600x900/?${encodeURIComponent(query)}`;
+    bgLayer.style.backgroundImage = `url("${url}")`;
+  }
   applyBgBtn.addEventListener('click', () => {
-    const q = (bgKeyword.value || '').trim();
-    if (!q) return;
-    setBackgroundForTheme(q);
+    const q = bgKeyword.value.trim();
+    if (q) setBackground(q);
   });
   resetBtn.addEventListener('click', () => {
     bgKeyword.value = '';
-    // get current page theme
-    const theme = pageEls[currentIndex] && pageEls[currentIndex].dataset.theme;
-    setBackgroundForTheme(theme);
+    setBackground('romantic,roses');
   });
 
-  // Save & Load content using localStorage
-  function gatherState() {
-    const pages = pageEls.map(p => {
-      return {
-        idx: +p.dataset.index,
-        theme: p.dataset.theme,
-        title: (p.querySelector('.title')?.innerText || '').trim(),
-        desc: (p.querySelector('.desc')?.innerText || '').trim(),
-        gif: (p.querySelector('.gif-preview img')?.src || '')
-      };
-    });
-    const page5data = {
-      title: page5.querySelector('.title')?.innerText || '',
-      desc: page5.querySelector('.desc')?.innerText || '',
-      gif: page5.querySelector('.gif-preview img')?.src || '',
-      finalText: page5.querySelector('.final-text')?.innerText || ''
-    };
-    return { pages, page5: page5data, currentIndex };
-  }
-  function saveState() {
-    const state = gatherState();
-    localStorage.setItem(pageDataKey, JSON.stringify(state));
-  }
-  function loadState() {
-    const raw = localStorage.getItem(pageDataKey);
-    if (!raw) return;
-    try {
-      const state = JSON.parse(raw);
-      state.pages?.forEach(pdata => {
-        const p = pageEls.find(x => +x.dataset.index === +pdata.idx);
-        if (!p) return;
-        if (pdata.title) p.querySelector('.title').innerText = pdata.title;
-        if (pdata.desc) p.querySelector('.desc').innerText = pdata.desc;
-        if (pdata.gif) {
-          const img = p.querySelector('.gif-preview img');
-          img.src = pdata.gif;
-          img.alt = pdata.title || 'GIF';
-        }
-      });
-      if (state.page5) {
-        if (state.page5.gif) {
-          const img = page5.querySelector('.gif-preview img');
-          img.src = state.page5.gif;
-        }
-        if (state.page5.finalText) page5.querySelector('.final-text').innerText = state.page5.finalText;
-      }
-      if (typeof state.currentIndex !== 'undefined') goToIndex(state.currentIndex);
-    } catch (e) { console.warn('Failed to restore', e); }
-  }
+  // Initialize default background
+  setBackground('romantic,roses');
 
-  // Make editable elements save on blur and on input throttle
-  document.addEventListener('input', (e) => {
-    if (e.target.matches('.editable')) {
-      // save after small delay
-      debounceSave();
-    }
-  });
-  document.addEventListener('blur', (e) => {
-    if (e.target.matches('.editable')) saveState();
-  }, true);
-  let saveTimer = null;
-  function debounceSave() {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => saveState(), 700);
-  }
+  // Pages: GIF add / yes / no logic
+  const addGifButtons = document.querySelectorAll('.add-gif-btn');
+  addGifButtons.forEach(btn => btn.addEventListener('click', (e) => {
+    const area = e.target.closest('.gif-area');
+    const urlInput = area.querySelector('.gif-url');
+    const url = urlInput.value.trim();
+    if (!url) { urlInput.focus(); return; }
+    const img = area.querySelector('.gif-preview img');
+    img.src = url;
+    saveState();
+  }));
 
-  // GIF add buttons
+  // Yes logic => reveal page5 with last gif/text
   document.addEventListener('click', (e) => {
-    if (e.target.matches('.add-gif-btn')) {
-      const area = e.target.closest('.gif-area');
-      const urlInput = area.querySelector('.gif-url');
-      const url = urlInput.value.trim();
-      if (!url) {
-        urlInput.focus();
-        return;
-      }
-      const img = area.querySelector('.gif-preview img');
-      img.src = url;
-      img.alt = 'GIF';
-      saveState();
-    }
-    // yes button logic: show page5 with a special gif and text
     if (e.target.matches('.yes-btn')) {
-      // find the closest gif preview image (from the page)
-      const area = e.target.closest('.gif-area');
-      const img = area.querySelector('.gif-preview img');
-      const src = img?.src || '';
-      // reveal page5 and set image and some text
+      const page = e.target.closest('.page');
+      const gifImg = page.querySelector('.gif-preview img');
       page5.classList.remove('hidden');
-      if (src) {
-        page5.querySelector('.gif-preview img').src = src;
+      const finalImg = page5.querySelector('.gif-preview.final img') || page5.querySelector('img');
+      if (gifImg && gifImg.src) {
+        const targetFinal = page5.querySelector('.gif-preview.final img');
+        if (targetFinal) targetFinal.src = gifImg.src;
       } else {
-        // fallback celebration gif
-        page5.querySelector('.gif-preview img').src = 'https://media.giphy.com/media/3oz8xS7GQ1ZQ1Y1Rbe/giphy.gif';
+        const fallback = 'https://media.giphy.com/media/3oz8xS7GQ1ZQ1Y1Rbe/giphy.gif';
+        const targetFinal = page5.querySelector('.gif-preview.final img');
+        if (targetFinal) targetFinal.src = fallback;
       }
-      // prefill final text
-      const titleFrom = e.target.closest('.page')?.querySelector('.title')?.innerText || '';
-      page5.querySelector('.final-text').innerText = Forever starts with a single yes. ${titleFrom};
-      // scroll to last page by moving pages container
-      // append page5 at the end of pages if not already there
-      if (!Array.from(pageEls).includes(page5)) {
-        pagesEl.appendChild(page5);
-      }
-      // navigate to page5 (we'll put it after the existing pages)
-      goToIndex(pageEls.length); // index beyond current pages
+      // scroll pages container into view (if visible)
+      pagesContainer.classList.remove('hidden');
+      page5.scrollIntoView({behavior:'smooth'});
       saveState();
     }
   });
 
-  // No button fun: for page 4, on mobile the No floats away / moves to random positions
-  function moveNoButtonRandomly(btn) {
-    const container = mobileFrame || btn.parentElement;
-    const rect = container.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-    // compute bounds relative to container
-    const maxLeft = Math.max(0, rect.width - btnRect.width - 8);
-    const maxTop = Math.max(0, rect.height - btnRect.height - 8);
-    const left = Math.random() * maxLeft;
-    const top = Math.random() * maxTop;
-    // apply transform relative to container
-    btn.style.transition = 'transform 0.25s ease';
-    btn.style.transform = translate(${left - btn.offsetLeft + 0}px, ${top - btn.offsetTop + 0}px);
-  }
-
+  // No logic: for page 4, on small screens floating behaviour
   document.addEventListener('click', (e) => {
     if (!e.target.matches('.no-btn')) return;
     const btn = e.target;
-    // if this is the special page4 button in mobile
     const page = btn.closest('.page');
-    const idx = +page?.dataset.index;
+    const idx = +page.dataset.index;
     if (idx === 4 && window.matchMedia('(max-width:600px)').matches) {
-      // move the button randomly within mobile frame
-      moveNoButtonRandomly(btn);
-      // playful sound effect? (optional) - you can hook an audio here
+      // move button to random position inside button's parent
+      const parent = btn.parentElement;
+      const pw = parent.clientWidth, ph = parent.clientHeight;
+      const nx = Math.random() * (pw - 40);
+      const ny = Math.random() * (ph - 28);
+      btn.style.position = 'relative';
+      btn.style.transform = `translate(${nx}px, ${ny}px)`;
+      setTimeout(() => { btn.style.transform = ''; }, 800);
     } else {
-      // small shaking animation as gentle refusal
-      btn.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }], { duration: 350 });
+      // shake
+      btn.animate([{ transform:'translateX(0)' }, { transform:'translateX(-8px)' }, { transform:'translateX(8px)' }, { transform:'translateX(0)' }], { duration:400 });
     }
   });
 
-  // When window resizes, ensure the pages transform aligns with the current index
-  window.addEventListener('resize', () => {
-    goToIndex(currentIndex);
+  // Save & load to localStorage (heart text + page gifs)
+  const storageKey = 'romantic_site_v1';
+  function saveState() {
+    const pages = pageEls.map(p => {
+      return {
+        idx: p.dataset.index,
+        title: p.querySelector('.page-title')?.innerText || '',
+        desc: p.querySelector('.page-desc')?.innerText || '',
+        gif: p.querySelector('.gif-preview img')?.src || ''
+      };
+    });
+    const thumbs = thumbEls.map(t => t.querySelector('img').src);
+    const state = { heart: heartText.innerHTML, pages, thumbs };
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  }
+  function loadState() {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return;
+    try {
+      const s = JSON.parse(raw);
+      if (s.heart) heartText.innerHTML = s.heart;
+      if (s.pages) {
+        s.pages.forEach(pd => {
+          const p = pageEls.find(x => x.dataset.index === pd.idx);
+          if (p) {
+            if (pd.title) p.querySelector('.page-title').innerText = pd.title;
+            if (pd.desc) p.querySelector('.page-desc').innerText = pd.desc;
+            if (pd.gif) p.querySelector('.gif-preview img').src = pd.gif;
+          }
+        });
+      }
+      if (s.thumbs) {
+        thumbEls.forEach((t, i) => {
+          if (s.thumbs[i]) t.querySelector('img').src = s.thumbs[i];
+        });
+      }
+    } catch (err) { console.warn('load failed', err); }
+  }
+  // Save on edits
+  document.addEventListener('input', (e) => {
+    if (e.target.matches('.page-title') || e.target.matches('.page-desc') || e.target.matches('#heartText')) {
+      debounceSave();
+    }
   });
+  let saveTimer;
+  function debounceSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 700);
+  }
+  // initial load
+  document.addEventListener('DOMContentLoaded', loadState);
 
-  // On initial load set background by first page theme
-  document.addEventListener('DOMContentLoaded', () => {
-    const theme = pageEls[0] && pageEls[0].dataset.theme;
-    setBackgroundForTheme(theme);
-  });
-
-  // Reset button and data reset
-  document.getElementById('resetBtn').addEventListener('click', () => {
-    localStorage.removeItem(pageDataKey);
-    // reload to clear content
-    setTimeout(() => location.reload(), 300);
-  });
-
-  // Save before unload
-  window.addEventListener('beforeunload', saveState);
+  // For developer: expose saveState to console
+  window._romantic_save = saveState;
 
 })();
